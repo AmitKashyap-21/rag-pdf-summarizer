@@ -54,6 +54,8 @@ class SummarizeRequest(BaseModel):
 
 
 class SummaryResponse(BaseModel):
+    model_config = {"from_attributes": True, "protected_namespaces": ()}
+
     summary: str
     summary_level: str
     model_used: str
