@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import uuid
 import numpy as np
 from typing import List, Dict, Any
 import faiss
@@ -13,12 +14,21 @@ os.makedirs(settings.INDEXES_PATH, exist_ok=True)
 EMBEDDING_DIM = 1536
 
 
+def _safe_document_id(document_id: str) -> str:
+    """Validate document_id is a UUID to prevent path traversal attacks."""
+    try:
+        return str(uuid.UUID(document_id))
+    except (ValueError, AttributeError):
+        raise ValueError(f"Invalid document_id: {document_id!r}")
+
+
 def create_and_save_index(
     document_id: str,
     chunks: List[Dict[str, Any]],
     embeddings: List[List[float]]
 ) -> None:
     """Create FAISS index and save to disk."""
+    document_id = _safe_document_id(document_id)
     embeddings_array = np.array(embeddings, dtype='float32')
 
     if embeddings_array.shape[1] != EMBEDDING_DIM:
@@ -55,6 +65,7 @@ def create_and_save_index(
 
 def load_index(document_id: str) -> tuple:
     """Load FAISS index and metadata from disk."""
+    document_id = _safe_document_id(document_id)
     index_path = os.path.join(settings.INDEXES_PATH, f"{document_id}.faiss")
     metadata_path = os.path.join(settings.INDEXES_PATH, f"{document_id}_metadata.json")
 
@@ -75,6 +86,7 @@ def search_index(
     top_k: int = 5
 ) -> List[Dict[str, Any]]:
     """Search FAISS index for similar chunks."""
+    document_id = _safe_document_id(document_id)
     index, metadata = load_index(document_id)
 
     query_array = np.array([query_embedding], dtype='float32')
@@ -101,6 +113,7 @@ def search_index(
 
 def delete_index(document_id: str) -> None:
     """Delete FAISS index files for a document."""
+    document_id = _safe_document_id(document_id)
     index_path = os.path.join(settings.INDEXES_PATH, f"{document_id}.faiss")
     metadata_path = os.path.join(settings.INDEXES_PATH, f"{document_id}_metadata.json")
 
@@ -112,5 +125,6 @@ def delete_index(document_id: str) -> None:
 
 def index_exists(document_id: str) -> bool:
     """Check if FAISS index exists for document."""
+    document_id = _safe_document_id(document_id)
     index_path = os.path.join(settings.INDEXES_PATH, f"{document_id}.faiss")
     return os.path.exists(index_path)
