@@ -1,8 +1,10 @@
 from pydantic_settings import BaseSettings
-from typing import Optional
+from pydantic import ConfigDict
 
 
 class Settings(BaseSettings):
+    model_config = ConfigDict(env_file=".env", extra="ignore")
+
     APP_NAME: str = "RAG PDF Summarizer"
     DEBUG: bool = False
     LOG_LEVEL: str = "INFO"
@@ -27,10 +29,6 @@ class Settings(BaseSettings):
     FAISS_METRIC: str = "L2"
 
     API_KEY: str = "changeme"
-
-    class Config:
-        env_file = ".env"
-        extra = "ignore"
 
 
 settings = Settings()

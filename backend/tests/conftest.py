@@ -1,10 +1,13 @@
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
+from unittest.mock import patch, AsyncMock
 from app.main import app
 from app.config import settings
 
 settings.API_KEY = "test-key"
+
+AUTH = {"Authorization": "Bearer test-key"}
 
 
 @pytest_asyncio.fixture

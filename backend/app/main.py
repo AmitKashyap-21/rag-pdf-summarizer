@@ -1,6 +1,7 @@
 import logging
 import os
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
@@ -39,5 +40,4 @@ app.include_router(documents_router, prefix="/api/v1")
 
 @app.get("/health")
 async def health_check():
-    from datetime import datetime
-    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat() + "Z"}
+    return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}

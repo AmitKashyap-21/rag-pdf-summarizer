@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: docurag-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: API_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: docurag-db
+          property: connectionString
+      - key: ALLOWED_ORIGINS
+        value: https://docurag-frontend.onrender.com
+      - key: STORAGE_PATH
+        value: /app/uploads
+      - key: INDEXES_PATH
+        value: /app/indexes
+    disk:
+      name: docurag-data
+      mountPath: /app
+      sizeGB: 10
+
+  - type: web
+    name: docurag-frontend
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    plan: starter
+    envVars:
+      - key: VITE_API_URL
+        # Set this to your deployed backend URL, e.g. https://docurag-backend.onrender.com
+        sync: false
+
+databases:
+  - name: docurag-db
+    plan: starter
+    databaseName: rag_pdf
